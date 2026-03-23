@@ -1,7 +1,38 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useArtworks, ArtworksFilters } from '@/services/artworkService'
+import { ArtworkGrid } from '@/components/ArtworkGrid'
+import { Artwork } from '@/services/artworkService'
 
 export function ExplorePage() {
   const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<ArtworksFilters>({})
+
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useArtworks(filters)
+
+  const handleFilterChange = useCallback((key: keyof ArtworksFilters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value === 'all' ? undefined : value,
+    }))
+  }, [])
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({})
+  }, [])
+
+  const handlePurchase = useCallback((artwork: Artwork) => {
+    console.log('Purchase artwork:', artwork)
+    // TODO: Implement purchase flow
+  }, [])
+
+  const artworks = data?.pages.flatMap(page => page.data) || []
+  const hasActiveFilters = Object.keys(filters).some(key => filters[key as keyof ArtworksFilters] !== undefined)
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,33 +53,45 @@ export function ExplorePage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Category</label>
-                <select className="input w-full">
-                  <option>All Categories</option>
-                  <option>Abstract</option>
-                  <option>Portrait</option>
-                  <option>Landscape</option>
-                  <option>Fantasy</option>
+                <select 
+                  className="input w-full"
+                  value={filters.category || 'all'}
+                  onChange={(e) => handleFilterChange('category', e.target.value)}
+                >
+                  <option value="all">All Categories</option>
+                  <option value="abstract">Abstract</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                  <option value="fantasy">Fantasy</option>
                 </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Price Range</label>
-                <select className="input w-full">
-                  <option>Any Price</option>
-                  <option>0 - 0.1 ETH</option>
-                  <option>0.1 - 0.5 ETH</option>
-                  <option>0.5 - 1 ETH</option>
-                  <option>1+ ETH</option>
+                <select 
+                  className="input w-full"
+                  value={filters.priceRange || 'all'}
+                  onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                >
+                  <option value="all">Any Price</option>
+                  <option value="0-0.1">0 - 0.1 ETH</option>
+                  <option value="0.1-0.5">0.1 - 0.5 ETH</option>
+                  <option value="0.5-1">0.5 - 1 ETH</option>
+                  <option value="1+">1+ ETH</option>
                 </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Sort By</label>
-                <select className="input w-full">
-                  <option>Recently Created</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                  <option>Most Popular</option>
+                <select 
+                  className="input w-full"
+                  value={filters.sortBy || 'all'}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                >
+                  <option value="all">Recently Created</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="popular">Most Popular</option>
                 </select>
               </div>
             </div>
@@ -63,33 +106,45 @@ export function ExplorePage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Category</label>
-                  <select className="input w-full">
-                    <option>All Categories</option>
-                    <option>Abstract</option>
-                    <option>Portrait</option>
-                    <option>Landscape</option>
-                    <option>Fantasy</option>
+                  <select 
+                    className="input w-full"
+                    value={filters.category || 'all'}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="abstract">Abstract</option>
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                    <option value="fantasy">Fantasy</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Price Range</label>
-                  <select className="input w-full">
-                    <option>Any Price</option>
-                    <option>0 - 0.1 ETH</option>
-                    <option>0.1 - 0.5 ETH</option>
-                    <option>0.5 - 1 ETH</option>
-                    <option>1+ ETH</option>
-                  </select>
+                  <select 
+                    className="input w-full"
+                    value={filters.priceRange || 'all'}
+                    onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                  >
+                    <option value="all">Any Price</option>
+                    <option value="0-0.1">0 - 0.1 ETH</option>
+                    <option value="0.1-0.5">0.1 - 0.5 ETH</option>
+                    <option value="0.5-1">0.5 - 1 ETH</option>
+                    <option value="1+">1+ ETH</option>
+                </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Sort By</label>
-                  <select className="input w-full">
-                    <option>Recently Created</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Most Popular</option>
+                  <select 
+                    className="input w-full"
+                    value={filters.sortBy || 'all'}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                  >
+                    <option value="all">Recently Created</option>
+                    <option value="price-low-high">Price: Low to High</option>
+                    <option value="price-high-low">Price: High to Low</option>
+                    <option value="popular">Most Popular</option>
                   </select>
                 </div>
               </div>
@@ -98,23 +153,16 @@ export function ExplorePage() {
         </div>
         
         {/* Artwork Grid */}
-        <div className="grid-mobile xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-            <div key={i} className="card-mobile overflow-hidden group cursor-pointer touch-manipulation">
-              <div className="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 group-hover:scale-105 transition-transform" />
-              <div className="p-4">
-                <h3 className="font-semibold text-secondary-900 text-mobile-base">AI Artwork #{i}</h3>
-                <p className="text-mobile-sm text-secondary-600 mb-2">Generated with AI Model</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-mobile-sm font-medium text-secondary-900">0.1 ETH</span>
-                  <button className="btn-primary text-mobile-sm px-4 py-2 touch-manipulation">
-                    Buy Now
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ArtworkGrid
+          artworks={artworks}
+          isLoading={isLoading}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={fetchNextPage}
+          onPurchase={handlePurchase}
+          onClearFilters={handleClearFilters}
+          hasFilters={hasActiveFilters}
+        />
       </div>
     </div>
   )
