@@ -1,35 +1,6 @@
 import { useInfiniteQuery, UseInfiniteQueryOptions } from '@tanstack/react-query'
 import { ErrorHandler } from '@/utils/errorHandler'
-
-export interface Artwork {
-  id: string
-  title: string
-  description: string
-  imageUrl: string
-  price: string
-  currency: string
-  creator: string
-  createdAt: string
-  category: string
-  prompt?: string
-  aiModel?: string
-}
-
-export interface ArtworksResponse {
-  success: boolean
-  data: Artwork[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-  }
-}
-
-export interface ArtworksFilters {
-  category?: string
-  priceRange?: string
-  sortBy?: string
-}
+import { Artwork, ArtworksResponse, ArtworksFilters } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 

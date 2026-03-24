@@ -1,24 +1,27 @@
 import { Button } from '@/components/ui/Button'
 import { Grid } from '@/components/layout/Grid'
 import { ArtworkCard } from '@/components/artwork/ArtworkCard'
+import { Artwork } from '@/types'
 
 // Mock data for demonstration
-const mockArtworks = Array.from({ length: 6 }, (_, i) => ({
+const mockArtworks: Artwork[] = Array.from({ length: 6 }, (_, i) => ({
   id: `mock-${i + 1}`,
   title: `AI Artwork #${i + 1}`,
   description: 'Generated with AI Model',
   imageUrl: `https://picsum.photos/600/600?random=${i + 1}`,
   price: '0.1',
   currency: 'ETH',
-  creator: `Artist ${i + 1}`
+  creator: `Artist ${i + 1}`,
+  createdAt: new Date().toISOString(),
+  category: 'abstract'
 }))
 
 export function HomePage() {
-  const handleArtworkView = (artwork: typeof mockArtworks[0]) => {
+  const handleArtworkView = (artwork: Artwork) => {
     console.log('View artwork:', artwork)
   }
 
-  const handleArtworkPurchase = (artwork: typeof mockArtworks[0]) => {
+  const handleArtworkPurchase = (artwork: Artwork) => {
     console.log('Purchase artwork:', artwork)
   }
 

@@ -2,18 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import * as StellarSdk from '@stellar/stellar-sdk'
 import { freighterApi } from '@stellar/freighter-api'
 import { ErrorHandler, AppError } from '@/utils/errorHandler'
-
-export interface StellarAccount {
-  publicKey: string
-  isConnected: boolean
-  balance?: string
-}
-
-export interface StellarTransaction {
-  hash: string
-  status: 'pending' | 'success' | 'error'
-  error?: AppError | null
-}
+import { StellarAccount, StellarTransaction } from '@/types'
 
 export function useStellar() {
   const [account, setAccount] = useState<StellarAccount>({

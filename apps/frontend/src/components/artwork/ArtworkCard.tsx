@@ -3,27 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 
-export interface Artwork {
-  id: string
-  title: string
-  description: string
-  imageUrl: string
-  price: string
-  currency: string
-  creator?: string
-  createdAt?: string
-  category?: string
-}
-
-export interface ArtworkCardProps {
-  artwork: Artwork
-  onPurchase?: (artwork: Artwork) => void
-  onView?: (artwork: Artwork) => void
-  showPrice?: boolean
-  showCreator?: boolean
-  variant?: 'default' | 'compact' | 'detailed'
-  className?: string
-}
+import { Artwork, ArtworkCardProps } from '@/types'
 
 export function ArtworkCard({
   artwork,

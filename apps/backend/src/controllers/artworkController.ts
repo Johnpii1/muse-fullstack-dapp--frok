@@ -8,6 +8,7 @@ import {
 } from '@/middleware/errorHandler'
 import { invalidateArtworkCache } from '@/middleware/cacheMiddleware'
 import { createLogger } from '@/utils/logger'
+import { Artwork, ApiResponse, CreateArtworkRequest, ArtworkQueryParams } from '@/types'
 
 const logger = createLogger('ArtworkController')
 
