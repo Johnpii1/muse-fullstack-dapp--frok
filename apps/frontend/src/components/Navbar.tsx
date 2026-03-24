@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { WalletConnect } from './WalletConnect'
-import { Muse, Menu, X } from 'lucide-react'
+import { Palette, Menu, X } from 'lucide-react'
 
 export function Navbar() {
   const location = useLocation()
@@ -17,13 +17,16 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-sm nav-mobile">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center space-x-8">
+          {/* Left: Logo */}
+          <div className="flex-1 flex items-center justify-start">
             <Link to="/" className="flex items-center space-x-2">
-              <Muse className="h-8 w-8 text-primary-600" />
+              <Palette className="h-8 w-8 text-primary-600" />
               <span className="text-xl font-bold text-secondary-900">Muse</span>
             </Link>
+          </div>
             
-            <div className="hidden md:flex space-x-8">
+          {/* Center: Navigation Links */}
+          <div className="hidden md:flex items-center justify-center space-x-16 lg:space-x-24 w-full">
               <Link
                 to="/"
                 className={`text-sm font-medium transition-colors ${
@@ -56,10 +59,10 @@ export function Navbar() {
               >
                 Profile
               </Link>
-            </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          {/* Right: Wallet Connect & Mobile Menu */}
+          <div className="flex-1 flex items-center justify-end space-x-4">
             <div className="hidden md:block">
               <WalletConnect />
             </div>
