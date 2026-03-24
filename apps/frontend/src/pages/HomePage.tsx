@@ -1,4 +1,4 @@
-import { useArtworks, ArtworksFilters, type { Artwork, ArtworksResponse } } from '@/services/artworkService'
+import { useArtworks, ArtworksFilters, type Artwork, type ArtworksResponse } from '@/services/artworkService'
 
 import { ArtworkGrid } from '@/components/ArtworkGrid'
 
@@ -9,9 +9,7 @@ export function HomePage() {
     data: featuredData,
     isLoading: featuredLoading,
     isFetchingNextPage: featuredFetchingNext,
-  } = useArtworks(filters, {
-    getNextPageParam: () => undefined,
-  })
+  } = useArtworks(filters)
 
   const featuredArtworks: Artwork[] = featuredData?.pages.flatMap((page: ArtworksResponse) => page.data) || []
 
