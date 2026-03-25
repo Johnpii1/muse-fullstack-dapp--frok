@@ -45,14 +45,21 @@ export function ErrorToast() {
   if (errors.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+    <div 
+      className="fixed top-4 right-4 z-50 space-y-2 max-w-sm"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
       {errors.map((error) => (
         <div
           key={error.id}
+          role="alert"
           className={`border rounded-lg shadow-lg p-4 ${getErrorColor(error)} transform transition-all duration-300 ease-in-out`}
         >
           <div className="flex items-start space-x-3">
-            {getErrorIcon(error)}
+            <div aria-hidden="true">
+              {getErrorIcon(error)}
+            </div>
             
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-semibold mb-1">
@@ -64,10 +71,10 @@ export function ErrorToast() {
               
               {error.details && (
                 <details className="mt-2 text-xs opacity-75">
-                  <summary className="cursor-pointer hover:opacity-100">
+                  <summary className="cursor-pointer hover:opacity-100" aria-label="View technical error details">
                     Technical details
                   </summary>
-                  <pre className="mt-1 whitespace-pre-wrap">
+                  <pre className="mt-1 whitespace-pre-wrap max-h-24 overflow-auto bg-black/5 p-2 rounded">
                     {typeof error.details === 'string' 
                       ? error.details 
                       : JSON.stringify(error.details, null, 2)
@@ -79,10 +86,10 @@ export function ErrorToast() {
             
             <button
               onClick={() => removeError(error.id!)}
-              className="flex-shrink-0 p-1 rounded-md hover:bg-black/10 transition-colors"
-              aria-label="Dismiss error"
+              className="flex-shrink-0 p-1 rounded-md hover:bg-black/10 transition-colors focus-visible:ring-2"
+              aria-label={`Dismiss error: ${formatErrorTitle(error.code)}`}
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
