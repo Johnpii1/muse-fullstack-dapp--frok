@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { ChevronRight, ChevronLeft, Upload, FileText, Wallet, Check, Sparkles } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronRight, ChevronLeft, Upload, FileText, Wallet, Check, Sparkles, AlertCircle, ExternalLink } from 'lucide-react'
+import { useStellar } from '@/hooks/useStellar'
 import { ErrorHandler, AppError } from '@/utils/errorHandler'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { TransactionStatus, TransactionStatusType } from '@/components/TransactionStatus'
@@ -24,6 +25,17 @@ interface StepperProps {
 }
 
 export function MintStepper({ onComplete }: StepperProps) {
+  const { 
+    account, 
+    isLoading: walletLoading, 
+    connectWallet, 
+    freighterState,
+    openFreighterDownload,
+    sendTransaction,
+    server,
+    network,
+  } = useStellar()
+
   const [currentStep, setCurrentStep] = useState(1)
   const [error, setError] = useState<AppError | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -46,9 +58,11 @@ export function MintStepper({ onComplete }: StepperProps) {
   })
 
   // Blockchain state
-  const [walletConnected, setWalletConnected] = useState(false)
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatusType>('idle')
+
+  // Wallet connection state
+  const walletConnected = account.isConnected
 
   const steps = [
     { id: 1, title: 'Metadata', icon: FileText, description: 'Add artwork details' },
@@ -71,7 +85,6 @@ export function MintStepper({ onComplete }: StepperProps) {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validate file type and size
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4']
     const maxSize = 50 * 1024 * 1024 // 50MB
 
@@ -143,14 +156,11 @@ export function MintStepper({ onComplete }: StepperProps) {
 
   const handleConnectWallet = async () => {
     setIsProcessing(true)
+    setError(null)
     try {
-      // Stellar wallet connection logic would go here
-      // For now, simulate connection
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      setWalletConnected(true)
-      setError(null)
-    } catch (error) {
-      const appError = ErrorHandler.handle(error)
+      await connectWallet()
+    } catch (err) {
+      const appError = err instanceof AppError ? err : ErrorHandler.handle(err)
       setError(appError)
     } finally {
       setIsProcessing(false)
@@ -172,19 +182,45 @@ export function MintStepper({ onComplete }: StepperProps) {
     setTransactionStatus('pending')
 
     try {
-      // Simulate transaction processing
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // In a real implementation, you would:
+      // 1. Create a Soroban contract transaction for minting
+      // 2. Use sendTransaction to sign and submit it
+      
+      // For demo purposes, we simulate the transaction flow
+      // In production, replace this with actual contract interaction:
+      
+      /*
+      // Example real implementation:
+      const contractId = import.meta.env.VITE_CONTRACT_ID
+      const contract = new Contract(contractId)
+      
+      // Build the mint transaction
+      const transaction = new TransactionBuilder(account, {
+        fee: '100',
+        networkPassphrase: network === 'testnet' ? Networks.TESTNET : Networks.PUBLIC,
+      })
+        .addOperation(contract.call('mint', ...params))
+        .setTimeout(30)
+        .build()
+      
+      const result = await sendTransaction(transaction)
+      
+      if (result.status === 'success') {
+        setTransactionHash(result.hash)
+        setTransactionStatus('confirmed')
+      }
+      */
 
-      // Generate mock transaction hash
-      const mockHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+      // Simulated transaction for demo
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      const mockHash = 'tx_' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
       setTransactionHash(mockHash)
       setTransactionStatus('confirmed')
-
-      // Call completion callback
       onComplete?.({ metadata, fileData })
-    } catch (error) {
+
+    } catch (err) {
       setTransactionStatus('failed')
-      const appError = ErrorHandler.handle(error)
+      const appError = err instanceof AppError ? err : ErrorHandler.handle(err)
       setError(appError)
     } finally {
       setIsProcessing(false)
@@ -243,31 +279,18 @@ export function MintStepper({ onComplete }: StepperProps) {
 
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Price (ETH) *
+                  Price (XLM) *
                 </label>
                 <input
                   type="number"
                   value={metadata.price}
                   onChange={(e) => setMetadata({ ...metadata, price: e.target.value })}
                   placeholder="0.0"
-                  step="0.01"
+                  step="0.1"
                   min="0"
                   className="input w-full"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-2">
-                Tags
-              </label>
-              <input
-                type="text"
-                value={metadata.tags.join(', ')}
-                onChange={(e) => setMetadata({ ...metadata, tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean) })}
-                placeholder="art, digital, creative (comma separated)"
-                className="input w-full"
-              />
             </div>
 
             <div>
@@ -278,8 +301,9 @@ export function MintStepper({ onComplete }: StepperProps) {
                 type="number"
                 value={metadata.royalty}
                 onChange={(e) => setMetadata({ ...metadata, royalty: e.target.value })}
+                placeholder="10"
                 min="0"
-                max="50"
+                max="100"
                 className="input w-full"
               />
             </div>
@@ -289,133 +313,108 @@ export function MintStepper({ onComplete }: StepperProps) {
       case 2:
         return (
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-2">
-                Upload File *
-              </label>
-              <div className="border-2 border-dashed border-secondary-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors">
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept="image/*,video/mp4"
+            {!fileData.preview ? (
+              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-secondary-300 border-dashed rounded-lg cursor-pointer bg-secondary-50 hover:bg-secondary-100 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-10 h-10 mb-3 text-secondary-400" />
+                  <p className="mb-2 text-sm text-secondary-700">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-secondary-500">
+                    PNG, JPG, GIF, WEBP or MP4 (MAX. 50MB)
+                  </p>
+                </div>
+                <input 
+                  type="file" 
                   className="hidden"
-                  id="file-upload"
+                  accept="image/jpeg,image/png,image/gif,image/webp,video/mp4"
+                  onChange={handleFileUpload}
                 />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  {fileData.preview ? (
-                    <div className="space-y-4">
-                      {fileData.type.startsWith('image/') ? (
-                        <img
-                          src={fileData.preview}
-                          alt="Preview"
-                          className="max-h-64 mx-auto rounded-lg"
-                        />
-                      ) : (
-                        <div className="aspect-video bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <Upload className="h-12 w-12 text-primary-400 mx-auto mb-2" />
-                            <p className="text-primary-600">Video uploaded</p>
-                          </div>
-                        </div>
-                      )}
-                      <p className="text-sm text-secondary-600">
-                        {fileData.file?.name} ({((fileData.file?.size || 0) / 1024 / 1024).toFixed(2)} MB)
-                      </p>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setFileData({ file: null, preview: null, type: '' })
-                        }}
-                        className="text-red-600 hover:text-red-700 text-sm"
-                      >
-                        Remove file
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <Upload className="h-12 w-12 text-secondary-400 mx-auto" />
-                      <div>
-                        <p className="text-secondary-600">Click to upload or drag and drop</p>
-                        <p className="text-sm text-secondary-500">PNG, JPG, GIF, WebP, MP4 (MAX. 50MB)</p>
-                      </div>
-                    </div>
-                  )}
-                </label>
+              </label>
+            ) : (
+              <div className="relative">
+                {fileData.type.startsWith('image/') ? (
+                  <img 
+                    src={fileData.preview} 
+                    alt="Preview" 
+                    className="w-full h-64 object-contain rounded-lg bg-secondary-100"
+                  />
+                ) : (
+                  <video 
+                    src={fileData.preview} 
+                    controls 
+                    className="w-full h-64 object-contain rounded-lg bg-secondary-100"
+                  />
+                )}
+                <button
+                  onClick={() => setFileData({ file: null, preview: null, type: '' })}
+                  className="absolute top-2 right-2 p-2 bg-secondary-900/50 hover:bg-secondary-900 text-white rounded-full transition-colors"
+                >
+                  ×
+                </button>
               </div>
-            </div>
-
-            <div className="card p-4">
-              <h4 className="font-medium text-secondary-900 mb-2">File Requirements</h4>
-              <ul className="text-sm text-secondary-600 space-y-1">
-                <li>• Maximum file size: 50MB</li>
-                <li>• Supported formats: PNG, JPG, GIF, WebP, MP4</li>
-                <li>• Recommended resolution: 3000x3000 pixels for images</li>
-                <li>• Video duration: Max 5 minutes</li>
-              </ul>
-            </div>
+            )}
           </div>
         )
 
       case 3:
         return (
           <div className="space-y-6">
-            <div className="card p-6">
-              <h3 className="font-semibold text-secondary-900 mb-4">Transaction Summary</h3>
-
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-secondary-600">Artwork</span>
-                  <span className="font-medium">{metadata.title}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary-600">Category</span>
-                  <span className="font-medium">{metadata.category}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary-600">Price</span>
-                  <span className="font-medium">{metadata.price} ETH</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary-600">Royalty</span>
-                  <span className="font-medium">{metadata.royalty}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary-600">Minting Fee</span>
-                  <span className="font-medium">0.01 ETH</span>
-                </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>{(parseFloat(metadata.price || '0') + 0.01).toFixed(3)} ETH</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {!walletConnected ? (
-              <button
-                onClick={handleConnectWallet}
-                disabled={isProcessing}
-                className="btn-primary w-full py-3 flex items-center justify-center space-x-2"
-              >
-                {isProcessing ? (
+              <div className="text-center space-y-4">
+                {freighterState.isInstalled ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                    <span>Connecting...</span>
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center">
+                        <Wallet className="h-8 w-8 text-secondary-600" />
+                      </div>
+                    </div>
+                    <p className="text-secondary-600">
+                      Connect your Freighter wallet to sign the minting transaction
+                    </p>
+                    <button
+                      onClick={handleConnectWallet}
+                      disabled={walletLoading}
+                      className="btn-primary w-full py-3 flex items-center justify-center space-x-2"
+                    >
+                      {walletLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          <span>Connecting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wallet className="h-4 w-4" />
+                          <span>Connect Wallet</span>
+                        </>
+                      )}
+                    </button>
                   </>
                 ) : (
-                  <>
-                    <Wallet className="h-4 w-4" />
-                    <span>Connect Wallet</span>
-                  </>
+                  <div className="space-y-4">
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                        <AlertCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                    </div>
+                    <p className="text-secondary-600">
+                      Freighter wallet is required to mint NFTs on Stellar
+                    </p>
+                    <button
+                      onClick={() => openFreighterDownload()}
+                      className="btn-primary w-full py-3 flex items-center justify-center space-x-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span>Install Freighter</span>
+                    </button>
+                  </div>
                 )}
-              </button>
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-green-600">
                   <Check className="h-5 w-5" />
-                  <span>Wallet connected</span>
+                  <span>Wallet connected: {account.publicKey.slice(0, 6)}...{account.publicKey.slice(-4)}</span>
                 </div>
 
                 <TransactionStatus
@@ -435,7 +434,7 @@ export function MintStepper({ onComplete }: StepperProps) {
                   </button>
                 )}
 
-                {isProcessing && transactionStatus === 'idle' && (
+                {isProcessing && transactionStatus === 'pending' && (
                   <button
                     disabled
                     className="btn-primary w-full py-3 flex items-center justify-center space-x-2 opacity-50"
