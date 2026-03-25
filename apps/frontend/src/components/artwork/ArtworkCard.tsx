@@ -4,25 +4,25 @@ import { Card } from '@/components/ui/Card'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 
 export interface Artwork {
-  id: string
-  title: string
-  description: string
-  imageUrl: string
-  price: string
-  currency: string
-  creator?: string
-  createdAt?: string
-  category?: string
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  currency: string;
+  creator?: string;
+  createdAt?: string;
+  category?: string;
 }
 
 export interface ArtworkCardProps {
-  artwork: Artwork
-  onPurchase?: (artwork: Artwork) => void
-  onView?: (artwork: Artwork) => void
-  showPrice?: boolean
-  showCreator?: boolean
-  variant?: 'default' | 'compact' | 'detailed'
-  className?: string
+  artwork: Artwork;
+  onPurchase?: (artwork: Artwork) => void;
+  onView?: (artwork: Artwork) => void;
+  showPrice?: boolean;
+  showCreator?: boolean;
+  variant?: "default" | "compact" | "detailed";
+  className?: string;
 }
 
 export function ArtworkCard({
@@ -31,18 +31,22 @@ export function ArtworkCard({
   onView,
   showPrice = true,
   showCreator = false,
-  variant = 'default',
-  className = ''
+  variant = "default",
+  className = "",
 }: ArtworkCardProps) {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement
-    target.style.display = 'none'
-    target.parentElement?.classList.add('bg-gradient-to-br', 'from-primary-100', 'to-primary-200')
-  }
+    const target = e.target as HTMLImageElement;
+    target.style.display = "none";
+    target.parentElement?.classList.add(
+      "bg-gradient-to-br",
+      "from-primary-100",
+      "to-primary-200",
+    );
+  };
 
   const renderContent = () => {
     switch (variant) {
-      case 'compact':
+      case "compact":
         return (
           <div className="flex space-x-3">
             <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex-shrink-0">
@@ -69,9 +73,9 @@ export function ArtworkCard({
               )}
             </div>
           </div>
-        )
-      
-      case 'detailed':
+        );
+
+      case "detailed":
         return (
           <div className="space-y-4">
             <div className="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg overflow-hidden">
@@ -84,21 +88,23 @@ export function ArtworkCard({
                 placeholder="blur"
               />
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <h3 className="font-semibold text-secondary-900 text-lg">
                   {artwork.title}
                 </h3>
                 {showCreator && artwork.creator && (
-                  <p className="text-sm text-secondary-600">by {artwork.creator}</p>
+                  <p className="text-sm text-secondary-600">
+                    by {artwork.creator}
+                  </p>
                 )}
               </div>
-              
+
               <p className="text-secondary-600 text-sm line-clamp-3">
                 {artwork.description}
               </p>
-              
+
               {showPrice && (
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-lg font-medium text-secondary-900">
@@ -128,8 +134,8 @@ export function ArtworkCard({
               )}
             </div>
           </div>
-        )
-      
+        );
+
       default:
         return (
           <div className="space-y-4">
@@ -143,7 +149,7 @@ export function ArtworkCard({
                 placeholder="blur"
               />
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="font-semibold text-secondary-900 text-mobile-base truncate">
                 {artwork.title}
@@ -151,7 +157,7 @@ export function ArtworkCard({
               <p className="text-mobile-sm text-secondary-600 line-clamp-2">
                 {artwork.description}
               </p>
-              
+
               {showPrice && (
                 <div className="flex items-center justify-between">
                   <span className="text-mobile-sm font-medium text-secondary-900">
@@ -181,24 +187,24 @@ export function ArtworkCard({
               )}
             </div>
           </div>
-        )
+        );
     }
-  }
+  };
 
   const cardVariants = {
-    compact: 'p-3',
-    detailed: 'p-6',
-    default: 'mobile'
-  }
+    compact: "p-3",
+    detailed: "p-6",
+    default: "mobile",
+  };
 
   return (
     <Card
-      variant={variant === 'default' ? 'mobile' : 'default'}
-      padding={variant === 'default' ? 'none' : 'md'}
-      hover={variant !== 'compact'}
-      className={className}
+      variant={variant === "default" ? "mobile" : "default"}
+      padding={variant === "default" ? "none" : "md"}
+      hover={variant !== "compact"}
+      className={`${className} group cursor-pointer`}
     >
       {renderContent()}
     </Card>
-  )
+  );
 }
