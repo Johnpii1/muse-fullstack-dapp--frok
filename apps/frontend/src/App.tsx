@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react";
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navigation } from './components/composite/Navigation';
@@ -50,4 +51,17 @@ function App() {
   );
 }
 
-export default App;
+export default Sentry.withErrorBoundary(App, {
+  fallback: (
+    <div className="min-h-screen bg-secondary-50 flex flex-col items-center justify-center p-4 text-center">
+      <h1 className="text-4xl font-bold text-secondary-900 mb-4">Something went wrong</h1>
+      <p className="text-secondary-600 mb-8">An unexpected error occurred. Our team has been notified.</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
+      >
+        Reload Page
+      </button>
+    </div>
+  )
+});
