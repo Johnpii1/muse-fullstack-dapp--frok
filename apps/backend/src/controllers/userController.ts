@@ -34,7 +34,12 @@ export const updateUserProfile = async (req: Request, res: Response, next: NextF
   try {
     const { address } = req.params
     const { username, bio, profileImage } = req.body
-    
+
+    const authRequest = req as any
+    if (authRequest.user?.address !== address) {
+      return next(createError('Forbidden: You can only update your own profile', 403))
+    }
+
     const user = await User.findOneAndUpdate(
       { address },
       { username, bio, profileImage, updatedAt: new Date() },

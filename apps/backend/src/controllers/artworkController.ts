@@ -58,6 +58,17 @@ export const getArtworkById = async (req: Request, res: Response, next: NextFunc
 export const createArtwork = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const artworkData = req.body
+    const authRequest = req as any
+
+    if (artworkData.creator !== authRequest.user?.address) {
+      return next(createError('Forbidden: Creator address must match authenticated user', 403))
+    }
+
+    const existingArtwork = await Artwork.findOne({ id: artworkData.id })
+    if (existingArtwork) {
+      return next(createError('Artwork with this ID already exists', 409))
+    }
+
     const artwork = await Artwork.create(artworkData)
 
     res.status(201).json({
@@ -73,6 +84,17 @@ export const createArtwork = async (req: Request, res: Response, next: NextFunct
 export const updateArtwork = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params
+    const authRequest = req as any
+
+    const existingArtwork = await Artwork.findOne({ id })
+    if (!existingArtwork) {
+      return next(createError('Artwork not found', 404))
+    }
+
+    if (existingArtwork.creator !== authRequest.user?.address) {
+      return next(createError('Forbidden: You can only update your own artworks', 403))
+    }
+
     const artwork = await Artwork.findOneAndUpdate({ id }, req.body, { new: true, runValidators: true })
 
     if (!artwork) {
@@ -92,11 +114,18 @@ export const updateArtwork = async (req: Request, res: Response, next: NextFunct
 export const deleteArtwork = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params
-    const artwork = await Artwork.findOneAndDelete({ id })
+    const authRequest = req as any
 
-    if (!artwork) {
+    const existingArtwork = await Artwork.findOne({ id })
+    if (!existingArtwork) {
       return next(createError('Artwork not found', 404))
     }
+
+    if (existingArtwork.creator !== authRequest.user?.address) {
+      return next(createError('Forbidden: You can only delete your own artworks', 403))
+    }
+
+    const artwork = await Artwork.findOneAndDelete({ id })
 
     res.json({
       success: true,
