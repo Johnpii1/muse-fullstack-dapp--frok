@@ -6,16 +6,41 @@ import { loginSchema } from '@/schemas/authSchemas'
 const router = Router()
 
 /**
- * @route   GET /api/auth/challenge
- * @desc    Get a challenge/nonce for signing
- * @access  Public
+ * @openapi
+ * /api/auth/challenge:
+ *   get:
+ *     summary: Get a challenge/nonce
+ *     description: Retrieve a nonce for signing to authenticate with a Stellar wallet
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Challenge nonce returned successfully
  */
 router.get('/challenge', getChallenge)
 
 /**
- * @route   POST /api/auth/login
- * @desc    Verify signature and issue JWT
- * @access  Public
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     summary: Login with Stellar wallet
+ *     description: Verify signature and issue a JWT token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               publicKey:
+ *                 type: string
+ *               signature:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful, JWT issued
+ *       401:
+ *         description: Invalid signature or public key
  */
 router.post('/login', validate(loginSchema), login)
 
