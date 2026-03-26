@@ -1,9 +1,47 @@
+import * as Sentry from "@sentry/react";
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navigation } from './components/composite/Navigation';
 import { ArtworkPage } from './pages/ArtworkPage';
 import SearchTest from './pages/SearchTest';
 import { useTranslation } from 'react-i18next';
+import { MetaTags } from './components/MetaTags';
+
+// ── Stub pages with proper SEO (noIndex until pages are complete) ─────────────
+
+function ProfileStub() {
+  return (
+    <>
+      <MetaTags
+        title="My Profile"
+        description="View and manage your Muse profile, collected artworks, and created NFTs."
+        canonicalUrl="https://muse.art/profile"
+        noIndex={true}
+      />
+      <div className="flex items-center justify-center p-20 text-secondary-500">
+        Profile Page (Coming Soon)
+      </div>
+    </>
+  );
+}
+
+function MintStub() {
+  return (
+    <>
+      <MetaTags
+        title="Mint NFT"
+        description="Mint your AI-generated artwork as an NFT on the Stellar blockchain via Muse."
+        canonicalUrl="https://muse.art/mint"
+        noIndex={true}
+      />
+      <div className="flex items-center justify-center p-20 text-secondary-500">
+        Mint Page (Coming Soon)
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function App() {
   const { i18n } = useTranslation();
@@ -17,16 +55,8 @@ function App() {
           <Route path="/" element={<SearchTest />} />
           <Route path="/explore" element={<SearchTest />} />
           <Route path="/artwork/:id" element={<ArtworkPage />} />
-          <Route path="/profile" element={
-            <div className="flex items-center justify-center p-20 text-secondary-500">
-              Profile Page (Coming Soon)
-            </div>
-          } />
-          <Route path="/mint" element={
-            <div className="flex items-center justify-center p-20 text-secondary-500">
-              Mint Page (Coming Soon)
-            </div>
-          } />
+          <Route path="/profile" element={<ProfileStub />} />
+          <Route path="/mint" element={<MintStub />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -50,4 +80,17 @@ function App() {
   );
 }
 
-export default App;
+export default Sentry.withErrorBoundary(App, {
+  fallback: (
+    <div className="min-h-screen bg-secondary-50 flex flex-col items-center justify-center p-4 text-center">
+      <h1 className="text-4xl font-bold text-secondary-900 mb-4">Something went wrong</h1>
+      <p className="text-secondary-600 mb-8">An unexpected error occurred. Our team has been notified.</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
+      >
+        Reload Page
+      </button>
+    </div>
+  )
+});
